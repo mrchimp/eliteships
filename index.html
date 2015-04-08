@@ -892,6 +892,8 @@
 					.appendTo('[name="ship-1-id"], [name="ship-2-id"]');
 			}
 
+			$('[name="ship-2-id"]').val("1");
+
 			$('select').on('change keydown', render);
 
 			render();
