@@ -1,0 +1,902 @@
+<!doctype html>
+<html>
+<head>
+	<title>Elite:Dangerous Ship Comparison</title>
+	<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+	<style type="text/css">
+		body {
+			margin-top: 75px;
+		}
+
+		.progress {
+			margin-bottom: 0;
+		}
+
+		.navbar .navbar-form label {
+			color: #9d9d9d;
+			margin: 0 10px 0 20px;
+		}
+
+		#ships th,
+		#ships td {
+			text-align: center;
+		}
+
+		@-moz-document url-prefix() {
+			fieldset { display: table-cell; }
+		}
+	</style>
+	<script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="bower_components/underscore/underscore-min.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a href="#" class="navbar-brand">Elite:Dangerous Ships</a>
+		</div>
+
+		<div class="collapse navbar-collapse" id="menu">
+			<div class="navbar-form pull-right">
+				<div class="form-group">
+					<label for="ship-1-id">Ship 1</label>
+					<select name="ship-1-id" class="form-control"></select>
+				</div>
+				<div class="form-group">
+					<label for="ship-2-id">Ship 2</label>
+					<select name="ship-2-id" class="form-control"></select>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="table-responsive">
+					<table class="table table-striped table-hover table-condensed" id="ships"></table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/template" id="ship_template">
+		<thead>
+			<tr>
+				<th class="col-sm-2"><%= ship1.model %></th>
+				<th class="col-sm-3"></th>
+				<th class="col-sm-2"></th>
+				<th class="col-sm-3"></th>
+				<th class="col-sm-2"><%= ship2.model %></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><%= ship1.role %></td>
+				<td></td>
+				<td>Role</td>
+				<td></td>
+				<td><%= ship2.role %></td>
+			</tr>
+			<tr>
+				<td><%= addCommas(ship1.cost) %></td>
+				<td><%= makeProgress(ship1.cost, 'cost') %></td>
+				<td>Cost</td>
+				<td><%= makeProgress(ship2.cost, 'cost') %></td>
+				<td><%= addCommas(ship2.cost) %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.unladen_range %></td>
+				<td><%= makeProgress(ship1.unladen_range, 'unladen_range') %></td>
+				<td>Unladen Range</td>
+				<td><%= makeProgress(ship2.unladen_range, 'unladen_range') %></td>
+				<td><%= ship2.unladen_range %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.laden_range %></td>
+				<td><%= makeProgress(ship1.laden_range, 'laden_range') %></td>
+				<td>Laden Range</td>
+				<td><%= makeProgress(ship2.laden_range, 'laden_range') %></td>
+				<td><%= ship2.laden_range %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.maneuverability %></td>
+				<td><%= makeProgress(ship1.maneuverability, 'maneuverability') %></td>
+				<td>Maneuverability</td>
+				<td><%= makeProgress(ship2.maneuverability, 'maneuverability') %></td>
+				<td><%= ship2.maneuverability %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.cargo %></td>
+				<td><%= makeProgress(ship1.cargo, 'cargo') %></td>
+				<td>Cargo</td>
+				<td><%= makeProgress(ship2.cargo, 'cargo') %></td>
+				<td><%= ship2.cargo %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.max_speed %></td>
+				<td><%= makeProgress(ship1.max_speed, 'max_speed') %></td>
+				<td>Max Speed</td>
+				<td><%= makeProgress(ship2.max_speed, 'max_speed') %></td>
+				<td><%= ship2.max_speed %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.boost_speed %></td>
+				<td><%= makeProgress(ship1.boost_speed, 'boost_speed') %></td>
+				<td>Boost Speed</td>
+				<td><%= makeProgress(ship2.boost_speed, 'boost_speed') %></td>
+				<td><%= ship2.boost_speed %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.armour %></td>
+				<td><%= makeProgress(ship1.armour, 'armour') %></td>
+				<td>Armour</td>
+				<td><%= makeProgress(ship2.armour, 'armour') %></td>
+				<td><%= ship2.armour %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.shields %></td>
+				<td><%= makeProgress(ship1.shields, 'shields') %></td>
+				<td>Shields</td>
+				<td><%= makeProgress(ship2.shields, 'shields') %></td>
+				<td><%= ship2.shields %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.hardpoints_small %></td>
+				<td><%= makeProgress(ship1.hardpoints_small, 'hardpoints_small') %></td>
+				<td>Hardpoints Small</td>
+				<td><%= makeProgress(ship2.hardpoints_small, 'hardpoints_small') %></td>
+				<td><%= ship2.hardpoints_small %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.hardpoints_medium %></td>
+				<td><%= makeProgress(ship1.hardpoints_medium, 'hardpoints_medium') %></td>
+				<td>Hardpoints Medium</td>
+				<td><%= makeProgress(ship2.hardpoints_medium, 'hardpoints_medium') %></td>
+				<td><%= ship2.hardpoints_medium %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.hardpoints_large %></td>
+				<td><%= makeProgress(ship1.hardpoints_large, 'hardpoints_large') %></td>
+				<td>Hardpoints Large</td>
+				<td><%= makeProgress(ship2.hardpoints_large, 'hardpoints_large') %></td>
+				<td><%= ship2.hardpoints_large %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.hardpoints_huge %></td>
+				<td><%= makeProgress(ship1.hardpoints_huge, 'hardpoints_huge') %></td>
+				<td>Hardpoints Huge</td>
+				<td><%= makeProgress(ship2.hardpoints_huge, 'hardpoints_huge') %></td>
+				<td><%= ship2.hardpoints_huge %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.utility_mounts %></td>
+				<td><%= makeProgress(ship1.utility_mounts, 'utility_mounts') %></td>
+				<td>Utility Mounts</td>
+				<td><%= makeProgress(ship2.utility_mounts, 'utility_mounts') %></td>
+				<td><%= ship2.utility_mounts %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.bulkheads %></td>
+				<td><%= makeProgress(ship1.bulkheads, 'bulkheads') %></td>
+				<td>Bulkheads</td>
+				<td><%= makeProgress(ship2.bulkheads, 'bulkheads') %></td>
+				<td><%= ship2.bulkheads %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.power_plant %></td>
+				<td><%= makeProgress(ship1.power_plant, 'power_plant') %></td>
+				<td>Power Plant</td>
+				<td><%= makeProgress(ship2.power_plant, 'power_plant') %></td>
+				<td><%= ship2.power_plant %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.thrusters %></td>
+				<td><%= makeProgress(ship1.thrusters, 'thrusters') %></td>
+				<td>Thrusters</td>
+				<td><%= makeProgress(ship2.thrusters, 'thrusters') %></td>
+				<td><%= ship2.thrusters %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.fsd %></td>
+				<td><%= makeProgress(ship1.fsd, 'fsd') %></td>
+				<td>Frame Shift Drive</td>
+				<td><%= makeProgress(ship1.fsd, 'fsd') %></td>
+				<td><%= ship2.fsd %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.life_support %></td>
+				<td><%= makeProgress(ship1.life_support, 'life_support') %></td>
+				<td>Life Support</td>
+				<td><%= makeProgress(ship2.life_support, 'life_support') %></td>
+				<td><%= ship2.life_support %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.power_distributor %></td>
+				<td><%= makeProgress(ship1.power_distributor, 'power_distributor') %></td>
+				<td>Power Distributor</td>
+				<td><%= makeProgress(ship2.power_distributor, 'power_distributor') %></td>
+				<td><%= ship2.power_distributor %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.sensors %></td>
+				<td><%= makeProgress(ship1.sensors, 'sensors') %></td>
+				<td>Sensors</td>
+				<td><%= makeProgress(ship2.sensors, 'sensors') %></td>
+				<td><%= ship2.sensors %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.fuel_tank %></td>
+				<td><%= makeProgress(ship1.fuel_tank, 'fuel_tank') %></td>
+				<td>Fuel Tank</td>
+				<td><%= makeProgress(ship2.fuel_tank, 'fuel_tank') %></td>
+				<td><%= ship2.fuel_tank %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_1 %></td>
+				<td><%= makeProgress(ship1.internal_1, 'internal_1') %></td>
+				<td>Internal 1</td>
+				<td><%= makeProgress(ship2.internal_1, 'internal_1') %></td>
+				<td><%= ship2.internal_1 %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_2 %></td>
+				<td><%= makeProgress(ship1.internal_2, 'internal_2') %></td>
+				<td>Internal 2</td>
+				<td><%= makeProgress(ship2.internal_2, 'internal_2') %></td>
+				<td><%= ship2.internal_2 %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_3 %></td>
+				<td><%= makeProgress(ship1.internal_3, 'internal_3') %></td>
+				<td>Internal 2</td>
+				<td><%= makeProgress(ship2.internal_3, 'internal_3') %></td>
+				<td><%= ship2.internal_3 %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_4 %></td>
+				<td><%= makeProgress(ship1.internal_4, 'internal_4') %></td>
+				<td>Internal 2</td>
+				<td><%= makeProgress(ship2.internal_4, 'internal_4') %></td>
+				<td><%= ship2.internal_4 %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_5 %></td>
+				<td><%= makeProgress(ship1.internal_5, 'internal_5') %></td>
+				<td>Internal 2</td>
+				<td><%= makeProgress(ship2.internal_5, 'internal_5') %></td>
+				<td><%= ship2.internal_5 %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_6 %></td>
+				<td><%= makeProgress(ship1.internal_6, 'internal_6') %></td>
+				<td>Internal 2</td>
+				<td><%= makeProgress(ship2.internal_6, 'internal_6') %></td>
+				<td><%= ship2.internal_6 %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_7 %></td>
+				<td><%= makeProgress(ship1.internal_7, 'internal_7') %></td>
+				<td>Internal 2</td>
+				<td><%= makeProgress(ship2.internal_7, 'internal_7') %></td>
+				<td><%= ship2.internal_7 %></td>
+			</tr>
+			<tr>
+				<td><%= ship1.internal_8 %></td>
+				<td><%= makeProgress(ship1.internal_8, 'internal_8') %></td>
+				<td>Internal 2</td>
+				<td><%= makeProgress(ship2.internal_8, 'internal_8') %></td>
+				<td><%= ship2.internal_8 %></td>
+			</tr>
+		</tbody>
+	</script>
+	<script type="text/template" id="progress_template">
+		<div class="progress">
+			<div class="progress-bar" style="width: <%= perc %>%"></div>
+		</div>
+	</script>
+	<script type="text/javascript">
+		function addCommas(nStr) {
+			nStr += '';
+			x = nStr.split('.');
+			x1 = x[0];
+			x2 = x.length > 1 ? '.' + x[1] : '';
+			var rgx = /(\d+)(\d{3})/;
+			while (rgx.test(x1)) {
+				x1 = x1.replace(rgx, '$1' + ',' + '$2');
+			}
+			return x1 + x2;
+		}
+
+		function getMax(type) {
+			var max = 0;
+
+			for (var i = 0; i < ships.length; i++) {
+				max = Math.max(max, ships[i][type]);
+			}
+
+			return max;
+		}
+
+		function makeProgress(value, type, high_is_good) {
+			perc = (value / getMax(type)) * 100;
+			return progress_template({
+				perc: perc,
+				value: value
+			});
+		}
+
+		function render() {
+			var id_1 = $('[name="ship-1-id"]').val(),
+				id_2 = $('[name="ship-2-id"]').val(),
+				data = {
+					ship1: _.extend({}, defaults, ships[id_1]),
+					ship2: _.extend({}, defaults, ships[id_2])
+				};
+
+			$('#ships').html(template(data));
+		}
+
+		var progress_template = _.template($('#progress_template').html());
+
+		var template = _.template($('#ship_template').html());
+
+		var defaults = {
+			model: '',
+			role: '',
+			unladen_range: 0,
+			laden_range: 0,
+			maneuverability: 0,
+			cargo: 0,
+			max_speed: 0,
+			boost_speed: 0,
+			armour: 0,
+			shields: 0,
+			cost: 0,
+			hardpoints_small: 0,
+			hardpoints_medium: 0,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 0,
+			bulkheads: 0,
+			power_plant: 0,
+			thrusters: 0,
+			fsd: 0,
+			life_support: 0,
+			power_distributor: 0,
+			sensors: 0,
+			fuel_tank: 0,
+			internal_1: 0,
+			internal_2: 0,
+			internal_3: 0,
+			internal_4: 0,
+			internal_5: 0,
+			internal_6: 0,
+			internal_7: 0,
+			internal_8: 0
+		}
+
+		var ships = [{
+			model: 'Sidewinder',
+			role: 'Mutli-purpose',
+			unladen_range: 7.56,
+			laden_range: 6.96,
+			maneuverability: 8,
+			cargo: 4,
+			max_speed: 220,
+			boost_speed: 320,
+			armour: 60,
+			shields: 40,
+			cost: 32000,
+			hardpoints_small: 2,
+			hardpoints_medium: 0,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 2,
+			bulkheads: 8,
+			power_plant: 2,
+			thrusters: 2,
+			fsd: 2,
+			life_support: 1,
+			power_distributor: 1,
+			sensors: 1,
+			fuel_tank: 1,
+			internal_1: 1,
+			internal_2: 2
+		},{
+			model: 'Eagle',
+			role: 'Combat',
+			unladen_range: 8.47,
+			laden_range: 8.27,
+			maneuverability: 10,
+			cargo: 2,
+			max_speed: 240,
+			boost_speed: 350,
+			armour: 40,
+			shields: 60,
+			cost: 44800,
+			hardpoints_small: 3,
+			hardpoints_medium: 0,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 1,
+			bulkheads: 8,
+			power_plant: 2,
+			thrusters: 3,
+			fsd: 3,
+			life_support: 1,
+			power_distributor: 2,
+			sensors: 2,
+			fuel_tank: 2,
+			internal_1: 1,
+			internal_2: 1,
+			internal_3: 1
+		},{
+			model: 'Hauler',
+			role: 'Freigher',
+			unladen_range: 9.87,
+			laden_range: 8.08,
+			maneuverability: 6,
+			cargo: 8,
+			max_speed: 200,
+			boost_speed: 300,
+			armour: 50,
+			shields: 50,
+			cost: 52720,
+			hardpoints_small: 1,
+			hardpoints_medium: 0,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 2,
+			bulkheads: 8,
+			power_plant: 2,
+			thrusters: 2,
+			fsd: 2,
+			life_support: 1,
+			power_distributor: 1,
+			sensors: 1,
+			fuel_tank: 3,
+			internal_1: 1,
+			internal_2: 1,
+			internal_3: 2
+		},{
+			model: 'Adder',
+			role: 'Freighter',
+			unladen_range: 9.12,
+			laden_range: 8.47,
+			maneuverability: 8,
+			cargo: 6,
+			max_speed: 220,
+			boost_speed: 320,
+			armour: 90,
+			shields: 60,
+			cost: 87808,
+			hardpoints_small: 2,
+			hardpoints_medium: 1,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 2,
+			bulkheads: 8,
+			power_plant: 3,
+			thrusters: 3,
+			fsd: 3,
+			life_support: 1,
+			power_distributor: 2,
+			sensors: 3,
+			fuel_tank: 3,
+			internal_1: 1,
+			internal_2: 2,
+			internal_3: 2
+		},{
+			model: 'Viper',
+			role: 'Combat',
+			unladen_range: 6.92,
+			laden_range: 6.66,
+			maneuverability: 6,
+			cargo: 4,
+			max_speed: 320,
+			boost_speed: 400,
+			armour: 70,
+			shields: 105,
+			cost: 142931,
+			hardpoints_small: 2,
+			hardpoints_medium: 2,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 2,
+			bulkheads: 8,
+			power_plant: 3,
+			thrusters: 3,
+			fsd: 3,
+			life_support: 2,
+			power_distributor: 3,
+			sensors: 3,
+			fuel_tank: 2,
+			internal_1: 1,
+			internal_2: 1,
+			internal_3: 2
+		},{
+			model: 'Cobra Mk. III',
+			role: 'Multi-purpose',
+			unladen_range: 10.46,
+			laden_range: 9.78,
+			maneuverability: 6,
+			cargo: 18,
+			max_speed: 280,
+			boost_speed: 400,
+			armour: 120,
+			shields: 80,
+			cost: 379718,
+			hardpoints_small: 2,
+			hardpoints_medium: 2,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 2,
+			bulkheads: 8,
+			power_plant: 4,
+			thrusters: 4,
+			fsd: 4,
+			life_support: 3,
+			power_distributor: 3,
+			sensors: 3,
+			fuel_tank: 4,
+			internal_2: 3,
+			interanl_4: 3
+		},{
+			model: 'Lakon Type-6',
+			role: 'Freighter',
+			unladen_range: 12.39,
+			laden_range: 10.07,
+			maneuverability: 3,
+			cargo: 50,
+			max_speed: 220,
+			boost_speed: 350,
+			armour: 90,
+			shields: 90,
+			cost: 1045945,
+			hardpoints_small: 2,
+			hardpoints_medium: 0,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 3,
+			bulkheads: 8,
+			power_plant: 3,
+			thrusters: 4,
+			fsd: 4,
+			life_support: 2,
+			power_distributor: 3,
+			sensors: 2,
+			fuel_tank: 4,
+			internal_2: 2,
+			internal_3: 1,
+			internal_4: 2,
+			internal_5: 2
+		},{
+			model: 'Vulture',
+			role: 'Combat',
+			unladen_range: 7.93,
+			laden_range: 7.75,
+			maneuverability: 9,
+			cargo: 8,
+			max_speed: 210,
+			boost_speed: 340,
+			armour: 160,
+			shields: 240,
+			cost: 4925615,
+			hardpoints_small: 0,
+			hardpoints_medium: 0,
+			hardpoints_large: 2,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 4,
+			thrusters: 5,
+			fsd: 4,
+			life_support: 3,
+			power_distributor: 5,
+			sensors: 4,
+			fuel_tank: 3,
+			internal_1: 2,
+			internal_2: 1,
+			internal_4: 1,
+			internal_5: 1
+		},{
+			model: 'Asp Explorer',
+			role: 'Multi-purpose',
+			unladen_range: 13.12,
+			laden_range: 12.07,
+			maneuverability: 6,
+			cargo: 38,
+			max_speed: 250,
+			boost_speed: 340,
+			armour: 210,
+			shields: 140,
+			cost: 6661153,
+			hardpoints_small: 4,
+			hardpoints_medium: 2,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 5,
+			thrusters: 5,
+			fsd: 5,
+			life_support: 4,
+			power_distributor: 4,
+			sensors: 5,
+			fuel_tank: 5,
+			internal_2: 2,
+			internal_3: 3,
+			internal_5: 1,
+			internal_6: 1
+		},{
+			model: 'Lakon Type-7',
+			role: 'Freighter',
+			unladen_range: 10.72,
+			laden_range: 9.06,
+			maneuverability: 2,
+			cargo: 104,
+			max_speed: 180,
+			boost_speed: 200,
+			armour: 120,
+			shields: 120,
+			cost: 17472252,
+			hardpoints_small: 4,
+			hardpoints_medium: 0,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 4,
+			thrusters: 5,
+			fsd: 5,
+			life_support: 4,
+			power_distributor: 3,
+			sensors: 3,
+			fuel_tank: 5,
+			internal_2: 2,
+			internal_4: 2,
+			internal_5: 2,
+			internal_6: 2
+		},{
+			model: 'Federal Dropship',
+			role: 'Multipurpose',
+			unladen_range: 7.25,
+			laden_range: 6.77,
+			maneuverability: 0,
+			cargo: 56,
+			max_speed: 180,
+			boost_speed: 300,
+			armour: 300,
+			shields: 200,
+			cost: 19295205,
+			hardpoints_small: 0,
+			hardpoints_medium: 4,
+			hardpoints_large: 1,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 6,
+			thrusters: 6,
+			fsd: 5,
+			life_support: 5,
+			power_distributor: 6,
+			sensors: 4,
+			fuel_tank: 4,
+			internal_2: 1,
+			internal_3: 2,
+			internal_4: 1,
+			internal_5: 2,
+			internal_6: 1
+		},{
+			model: 'Imperial Clipper',
+			role: 'Multi-purpose',
+			unladen_range: 8.98,
+			laden_range: 8.05,
+			maneuverability: 2,
+			cargo: 74,
+			max_speed: 300,
+			boost_speed: 380,
+			armour: 270,
+			shields: 180,
+			cost: 22295860,
+			hardpoints_small: 0,
+			hardpoints_medium: 2,
+			hardpoints_large: 2,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 6,
+			thrusters: 6,
+			fsd: 5,
+			life_support: 5,
+			power_distributor: 6,
+			sensors: 5,
+			fuel_tank: 4,
+			internal_2: 2,
+			internal_3: 2,
+			internal_4: 2,
+			internal_6: 1,
+			internal_7: 1
+		},{
+			model: 'Orca',
+			role: 'Passenger',
+			unladen_range: 7.44,
+			laden_range: 6.81,
+			maneuverability: 2,
+			cargo: 72,
+			max_speed: 300,
+			boost_speed: 380,
+			armour: 220,
+			shields: 220,
+			cost: 48539887,
+			hardpoints_small: 0,
+			hardpoints_medium: 2,
+			hardpoints_large: 1,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 5,
+			thrusters: 6,
+			fsd: 5,
+			life_support: 6,
+			power_distributor: 5,
+			sensors: 4,
+			fuel_tank: 4,
+			internal_2: 2,
+			internal_3: 1,
+			internal_4: 1,
+			internal_5: 2
+		},{
+			model: 'Fer-de-Lance',
+			role: 'Combat',
+			unladen_range: 7,
+			laden_range: 6.59,
+			maneuverability: 6,
+			cargo: 24,
+			max_speed: 260,
+			boost_speed: 350,
+			armour: 225,
+			shields: 300,
+			cost: 51567040,
+			hardpoints_small: 0,
+			hardpoints_medium: 4,
+			hardpoints_large: 0,
+			hardpoints_huge: 1,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 5,
+			thrusters: 5,
+			fsd: 4,
+			life_support: 4,
+			power_distributor: 6,
+			sensors: 4,
+			fuel_tank: 3,
+			internal_1: 1,
+			internal_2: 1,
+			internal_4: 2,
+			internal_5: 1
+		},{
+			model: 'Python',
+			role: 'Multi-purpose',
+			unladen_range: 8.23,
+			laden_range: 7.36,
+			maneuverability: 6,
+			cargo: 82,
+			max_speed: 230,
+			boost_speed: 280,
+			armour: 260,
+			shields: 260,
+			cost: 56978179,
+			hardpoints_small: 0,
+			hardpoints_medium: 2,
+			hardpoints_large: 3,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 7,
+			thrusters: 6,
+			fsd: 5,
+			life_support: 4,
+			power_distributor: 7,
+			sensors: 6,
+			fuel_tank: 5,
+			internal_2: 1,
+			internal_3: 2,
+			internal_4: 1,
+			internal_5: 2,
+			internal_6: 2
+		},{
+			model: 'Lakon Type-9 Heavy',
+			role: 'Freighter',
+			unladen_range: 7.71,
+			laden_range: 6.62,
+			maneuverability: 0,
+			cargo: 220,
+			max_speed: 130,
+			boost_speed: 200,
+			armour: 240,
+			shields: 240,
+			cost: 76555842,
+			hardpoints_small: 2,
+			hardpoints_medium: 3,
+			hardpoints_large: 0,
+			hardpoints_huge: 0,
+			utility_mounts: 4,
+			bulkheads: 8,
+			power_plant: 6,
+			thrusters: 7,
+			fsd: 6,
+			life_support: 5,
+			power_distributor: 6,
+			sensors: 4,
+			fuel_tank: 6,
+			internal_2: 1,
+			internal_3: 2,
+			internal_4: 2,
+			internal_5: 1,
+			internal_6: 1,
+			internal_7: 1,
+			internal_8: 1,
+		},{
+			model: 'Anaconda',
+			role: 'Multi-purpose',
+			unladen_range: 9,
+			laden_range: 8.52,
+			maneuverability: 2,
+			cargo: 114,
+			max_speed: 180,
+			boost_speed: 240,
+			armour: 525,
+			shields: 350,
+			cost: 146969451,
+			hardpoints_small: 2,
+			hardpoints_medium: 2,
+			hardpoints_large: 3,
+			hardpoints_huge: 1,
+			utility_mounts: 8,
+			bulkheads: 8,
+			power_plant: 8,
+			thrusters: 7,
+			fsd: 6,
+			life_support: 5,
+			power_distributor: 8,
+			sensors: 8,
+			fuel_tank: 5,
+			internal_2: 1,
+			internal_4: 3,
+			internal_5: 3,
+			internal_6: 3,
+			internal_7: 1,
+		}];
+
+		var maxes = _.clone(defaults);
+
+		_.each(ships, function (ship) {
+			_.each(ship, function (value, type) {
+				maxes[type] = Math.max(maxes[type], value);
+			})
+		});
+
+		$(document).ready(function() {
+			for (var i = 0; i < ships.length; i++) {
+				$('<option />')
+					.val(i)
+					.text(ships[i].model)
+					.appendTo('[name="ship-1-id"], [name="ship-2-id"]');
+			}
+
+			$('select').on('change keydown', render);
+
+			render();
+		});
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "eliteships",
+  "version": "0.0.0",
+  "authors": [
+    "mrchimp <chimpytk@gmail.com>"
+  ],
+  "description": "Compare Elite:Dangerous ships.",
+  "license": "MIT",
+  "homepage": "http://deviouschimp.co.uk/misc/eliteships",
+  "private": true,
+  "dependencies": {
+    "underscore": "~1.8.3",
+    "jquery": "~2.1.3",
+    "bootstrap": "~3.3.4"
+  }
+}
